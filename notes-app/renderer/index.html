@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 内容安全策略：限制资源加载，只允许本地资源 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'">
+  <title>简单笔记</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 应用容器 -->
+  <div class="app-container">
+    <!-- 顶部工具栏 -->
+    <header class="toolbar">
+      <!-- 新建按钮 -->
+      <button id="newBtn" class="toolbar-btn" title="新建 (Ctrl+N)">
+        <span class="icon">+</span>
+        新建
+      </button>
+      <!-- 打开按钮 -->
+      <button id="openBtn" class="toolbar-btn" title="打开 (Ctrl+O)">
+        <span class="icon">&#128194;</span>
+        打开
+      </button>
+      <!-- 保存按钮 -->
+      <button id="saveBtn" class="toolbar-btn" title="保存 (Ctrl+S)">
+        <span class="icon">&#128190;</span>
+        保存
+      </button>
+      <!-- 状态显示区域 -->
+      <span class="status" id="statusText">就绪</span>
+    </header>
+
+    <!-- 编辑器区域 -->
+    <main class="editor-container">
+      <!-- 文本编辑器 -->
+      <textarea id="editor" placeholder="在这里输入文字..." spellcheck="false"></textarea>
+    </main>
+
+    <!-- 底部状态栏 -->
+    <footer class="status-bar">
+      <!-- 字符数统计 -->
+      <span id="charCount">字符数: 0</span>
+      <!-- 行数统计 -->
+      <span id="lineCount">行数: 1</span>
+    </footer>
+  </div>
+
+  <!-- 加载渲柘进程脚本 -->
+  <script src="renderer.js"></script>
+</body>
+</html>
