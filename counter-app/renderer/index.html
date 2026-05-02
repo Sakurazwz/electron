@@ -1,0 +1,86 @@
+<!-- ============================================================
+  Electron 计数器应用 - HTML 文件
+  文件路径: counter-app/renderer/index.html
+  ============================================================ -->
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <!-- 设置字符编码为 UTF-8，确保中文正常显示 -->
+  <meta charset="UTF-8">
+
+  <!-- 设置视口，确保页面在移动设备上正常显示 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Content Security Policy (CSP) 内容安全策略
+       用于防止 XSS 攻击，限制页面可以加载的资源来源
+       - default-src 'self': 默认只允许同源资源
+       - script-src 'self': 只允许同源的脚本 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+
+  <!-- 网页标题 -->
+  <title>计数器应用</title>
+
+  <!-- 引入外部 CSS 样式文件 -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- 主容器 -->
+  <div class="container">
+    <!-- 标题 -->
+    <h1>计数器</h1>
+
+    <!-- 计数器显示区域
+         id="counter" 用于在 JavaScript 中获取 DOM 元素并更新数值 -->
+    <div class="counter-display" id="counter">0</div>
+
+    <!-- 按钮组 -->
+    <div class="button-group">
+      <!-- 减少按钮
+           id="decreaseBtn" 用于在 JavaScript 中绑定点击事件 -->
+      <button id="decreaseBtn" class="btn btn-decrease">-1</button>
+
+      <!-- 重置按钮
+           id="resetBtn" 用于在 JavaScript 中绑定点击事件 -->
+      <button id="resetBtn" class="btn btn-reset">重置</button>
+
+      <!-- 增加按钮
+           id="increaseBtn" 用于在 JavaScript 中绑定点击事件 -->
+      <button id="increaseBtn" class="btn btn-increase">+1</button>
+    </div>
+
+    <!-- 状态消息显示区域
+         用于显示操作结果（如 "已记录：+1"）
+         id="status" 用于在 JavaScript 中更新文本内容 -->
+    <p class="status" id="status"></p>
+  </div>
+
+  <!-- 引入渲染进程的 JavaScript 脚本
+       注意：script 标签在 body 最后，确保 DOM 元素已加载完成 -->
+  <script src="renderer.js"></script>
+</body>
+</html>
+
+<!-- ============================================================
+  HTML 结构说明：
+  ============================================================
+
+  1. <!DOCTYPE html>: 声明文档类型为 HTML5
+
+  2. <head> 头部部分：
+     - meta charset: 设置字符编码，防止中文乱码
+     - meta viewport: 确保响应式布局正常
+     - meta CSP: 内容安全策略，防止 XSS 攻击
+
+  3. <body> 主体部分：
+     - .container: 主容器，包含所有内容
+     - h1: 页面标题
+     - .counter-display: 计数器数值显示
+     - .button-group: 按钮组容器
+     - .btn: 通用按钮样式
+     - .status: 状态消息显示
+
+  4. script 标签位置：
+     - 放在 body 末尾，确保 DOM 元素已加载
+     - 也可以使用 defer 属性放在 head 中
+-->
