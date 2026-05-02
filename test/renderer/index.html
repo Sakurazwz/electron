@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPU & CPU 跑分测试工具</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>GPU & CPU 跑分测试工具</h1>
+      <p class="subtitle">测试您的显卡和处理器性能</p>
+    </header>
+
+    <main>
+      <!-- 测试类型选择 -->
+      <section class="test-mode-section">
+        <h2>测试类型</h2>
+        <div class="mode-tabs">
+          <button id="gpu-mode-btn" class="mode-btn active" data-mode="gpu">GPU 测试</button>
+          <button id="cpu-mode-btn" class="mode-btn" data-mode="cpu">CPU 测试</button>
+          <button id="combined-mode-btn" class="mode-btn" data-mode="combined">综合测试</button>
+        </div>
+      </section>
+
+      <!-- GPU 信息展示区域 -->
+      <section id="gpu-info-section" class="gpu-info-section">
+        <h2>GPU 信息</h2>
+        <div class="info-grid">
+          <div class="info-card">
+            <h3>显卡型号</h3>
+            <p id="gpu-name" class="value">--</p>
+          </div>
+          <div class="info-card">
+            <h3>WebGL 版本</h3>
+            <p id="webgl-version" class="value">--</p>
+          </div>
+          <div class="info-card">
+            <h3>WebGL 渲染器</h3>
+            <p id="webgl-renderer" class="value">--</p>
+          </div>
+          <div class="info-card">
+            <h3>显存估计</h3>
+            <p id="gpu-memory" class="value">--</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- CPU 信息展示区域 -->
+      <section id="cpu-info-section" class="cpu-info-section hidden">
+        <h2>CPU 信息</h2>
+        <div class="info-grid">
+          <div class="info-card">
+            <h3>逻辑核心数</h3>
+            <p id="cpu-cores" class="value">--</p>
+          </div>
+          <div class="info-card">
+            <h3>设备内存</h3>
+            <p id="cpu-memory" class="value">--</p>
+          </div>
+          <div class="info-card">
+            <h3>CPU 厂商</h3>
+            <p id="cpu-vendor" class="value">--</p>
+          </div>
+          <div class="info-card">
+            <h3>平台</h3>
+            <p id="cpu-platform" class="value">--</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 跑分测试区域 -->
+      <section class="benchmark-section">
+        <h2 id="test-section-title">跑分测试</h2>
+        <div class="benchmark-controls">
+          <div class="test-selection">
+            <label for="test-type">选择测试项目:</label>
+            <select id="test-type">
+              <!-- GPU 测试选项 -->
+              <optgroup id="gpu-options" label="GPU 测试">
+                <option value="all">全部测试 (推荐)</option>
+                <option value="2d">二维图形渲染</option>
+                <option value="particles">粒子系统 (5000+ 粒子)</option>
+                <option value="3d">3D 渲染</option>
+                <option value="shader">着色器计算</option>
+                <option value="blend">混合模式</option>
+              </optgroup>
+              <!-- CPU 测试选项 -->
+              <optgroup id="cpu-options" label="CPU 测试" hidden>
+                <option value="cpu-all">全部 CPU 测试</option>
+                <option value="cpu-integer">整数运算</option>
+                <option value="cpu-float">浮点数运算</option>
+                <option value="cpu-memory">内存操作</option>
+                <option value="cpu-sort">排序算法</option>
+                <option value="cpu-crypto">加密计算</option>
+              </optgroup>
+            </select>
+          </div>
+          <button id="start-btn" class="btn-primary">开始跑分</button>
+          <button id="stop-btn" class="btn-secondary" disabled>停止测试</button>
+        </div>
+
+        <!-- 进度条 -->
+        <div id="progress-container" class="progress-container hidden">
+          <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+          <p id="progress-text" class="progress-text">准备中...</p>
+        </div>
+
+        <!-- 实时测试画面 (GPU 测试时显示) -->
+        <div id="test-visual-container" class="test-canvas-container">
+          <canvas id="test-canvas"></canvas>
+          <div id="test-overlay" class="test-overlay hidden">
+            <div class="fps-counter">
+              <span id="current-fps">0</span> FPS
+            </div>
+          </div>
+        </div>
+
+        <!-- CPU 测试状态显示 -->
+        <div id="cpu-test-status" class="cpu-test-status hidden">
+          <div class="cpu-status-icon">⚙️</div>
+          <div class="cpu-status-text">正在进行 CPU 性能测试...</div>
+          <div class="cpu-cores-active">
+            <span id="active-cores">启用了 <span id="cores-count">0</span> 个工作线程</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 测试结果展示 -->
+      <section id="results-section" class="results-section hidden">
+        <h2 id="results-title">测试结果</h2>
+        <div class="score-display">
+          <div class="main-score">
+            <span id="total-score" class="score-value">0</span>
+            <span class="score-label">总分</span>
+          </div>
+          <div class="score-rating" id="score-rating">--</div>
+        </div>
+        <div class="detailed-results" id="detailed-results">
+          <!-- 详细测试项目结果将在这里动态生成 -->
+        </div>
+        <div class="result-actions">
+          <button id="save-btn" class="btn-secondary">保存结果</button>
+          <button id="share-btn" class="btn-secondary">分享结果</button>
+        </div>
+      </section>
+
+      <!-- 历史记录 -->
+      <section class="history-section">
+        <h2>历史记录</h2>
+        <div id="history-list" class="history-list">
+          <p class="empty-message">暂无记录</p>
+        </div>
+        <button id="clear-history-btn" class="btn-text">清空历史记录</button>
+      </section>
+    </main>
+
+    <footer>
+      <p>GPU & CPU Benchmark Tool - 基于 WebGL 和 Web Worker 技术</p>
+    </footer>
+  </div>
+
+  <script src="benchmark.js"></script>
+  <script src="cpu-benchmark.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

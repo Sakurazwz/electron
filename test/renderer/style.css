@@ -1,0 +1,723 @@
+/* 基础样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: linear-gradient(135deg, #0a0a1a 0%, #0f1628 50%, #0a0a1a 100%);
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 头部样式 */
+header {
+  text-align: center;
+  padding: 40px 0;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+  margin-bottom: 20px;
+}
+
+header h1 {
+  font-size: 2.8rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #00d4ff, #9d4edd, #c77dff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 12px;
+  text-shadow: 0 0 40px rgba(0, 212, 255, 0.3);
+}
+
+.subtitle {
+  color: #7b8fa8;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+}
+
+/* 区块样式 */
+section {
+  background: rgba(16, 22, 40, 0.6);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.3s ease;
+}
+
+section:hover {
+  border-color: rgba(0, 212, 255, 0.3);
+}
+
+section h2 {
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+  color: #00d4ff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+section h2::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, #00d4ff, #9d4edd);
+  border-radius: 2px;
+}
+
+/* GPU 信息卡片 */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.info-card {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.08) 0%, rgba(157, 78, 221, 0.05) 100%);
+  padding: 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(0, 212, 255, 0.4);
+  box-shadow: 0 12px 24px rgba(0, 212, 255, 0.1);
+}
+
+.info-card h3 {
+  font-size: 0.8rem;
+  color: #7b8fa8;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-weight: 500;
+}
+
+.info-card .value {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #fff;
+  word-break: break-word;
+  line-height: 1.4;
+}
+
+/* 控制按钮 */
+.benchmark-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.test-selection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 280px;
+}
+
+.test-selection label {
+  color: #7b8fa8;
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+.test-selection select {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  background: rgba(10, 15, 30, 0.8);
+  color: #e0e0e0;
+  font-size: 0.95rem;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.test-selection select:focus {
+  border-color: #00d4ff;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+.btn-primary, .btn-secondary, .btn-text {
+  padding: 14px 28px;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #00d4ff 0%, #9d4edd 100%);
+  color: #0a0a1a;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background: rgba(0, 212, 255, 0.1);
+  color: #00d4ff;
+  border: 1px solid rgba(0, 212, 255, 0.4);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(0, 212, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-text {
+  background: transparent;
+  color: #ff6b6b;
+  padding: 10px 18px;
+  font-size: 0.9rem;
+}
+
+.btn-text:hover {
+  text-decoration: underline;
+  color: #ff8585;
+}
+
+/* 进度条 */
+.progress-container {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: rgba(10, 15, 30, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+}
+
+.progress-bar {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #00d4ff 0%, #9d4edd 50%, #c77dff 100%);
+  border-radius: 5px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+}
+
+.progress-text {
+  text-align: center;
+  margin-top: 12px;
+  color: #7b8fa8;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+/* 测试画布区域 */
+.test-canvas-container {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  background: linear-gradient(135deg, #050508 0%, #0a0a12 100%);
+  border-radius: 14px;
+  overflow: hidden;
+  border: 2px solid rgba(0, 212, 255, 0.2);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.5), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+#test-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.test-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.fps-counter {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(10, 15, 30, 0.85);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #00ff88;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+#current-fps {
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+
+/* 结果展示 */
+.score-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  padding: 48px;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(157, 78, 221, 0.08) 100%);
+  border-radius: 18px;
+  margin-bottom: 28px;
+  border: 2px solid rgba(0, 212, 255, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+}
+
+.main-score {
+  text-align: center;
+}
+
+.score-value {
+  display: block;
+  font-size: 4.5rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #00d4ff, #9d4edd, #c77dff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1;
+  text-shadow: 0 0 60px rgba(0, 212, 255, 0.3);
+}
+
+.score-label {
+  display: block;
+  color: #7b8fa8;
+  font-size: 0.95rem;
+  margin-top: 12px;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  font-weight: 500;
+}
+
+.score-rating {
+  padding: 14px 28px;
+  border-radius: 10px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.rating-excellent {
+  background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+  color: #0a0a1a;
+  box-shadow: 0 4px 20px rgba(0, 200, 83, 0.4);
+}
+
+.rating-good {
+  background: linear-gradient(135deg, #ffd600 0%, #ffea00 100%);
+  color: #0a0a1a;
+  box-shadow: 0 4px 20px rgba(255, 214, 0, 0.4);
+}
+
+.rating-average {
+  background: linear-gradient(135deg, #ff9100 0%, #ffab00 100%);
+  color: #0a0a1a;
+  box-shadow: 0 4px 20px rgba(255, 145, 0, 0.4);
+}
+
+.rating-poor {
+  background: linear-gradient(135deg, #ff1744 0%, #ff5252 100%);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(255, 23, 68, 0.4);
+}
+
+/* 详细结果 */
+.detailed-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.detail-card {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.06) 0%, rgba(157, 78, 221, 0.04) 100%);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.detail-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(0, 212, 255, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 212, 255, 0.15);
+}
+
+.detail-card h4 {
+  color: #7b8fa8;
+  font-size: 0.9rem;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.detail-card h4::before {
+  content: '■';
+  color: #00d4ff;
+  font-size: 0.7rem;
+}
+
+.detail-score {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #00d4ff;
+  margin-bottom: 6px;
+  text-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.detail-fps {
+  font-size: 0.9rem;
+  color: #7b8fa8;
+  margin-top: 6px;
+}
+
+.result-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+}
+
+/* 历史记录 */
+.history-section {
+  max-height: 420px;
+  overflow: hidden;
+}
+
+.history-list {
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.05) 0%, rgba(157, 78, 221, 0.03) 100%);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(0, 212, 255, 0.15);
+  transition: all 0.3s ease;
+}
+
+.history-item:hover {
+  border-color: rgba(0, 212, 255, 0.35);
+  transform: translateX(4px);
+}
+
+.history-date {
+  color: #7b8fa8;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.history-score {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #00d4ff;
+  text-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+}
+
+.empty-message {
+  text-align: center;
+  color: #5a6a7a;
+  padding: 48px;
+  font-size: 1rem;
+  letter-spacing: 0.5px;
+}
+
+/* 工具类 - 排除 optgroup */
+.hidden:not(optgroup) {
+  display: none !important;
+}
+
+optgroup[hidden] {
+  display: none;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 212, 255, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 212, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 212, 255, 0.35);
+}
+
+/* 页脚 */
+footer {
+  text-align: center;
+  padding: 30px;
+  color: #5a6a7a;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  border-top: 1px solid rgba(0, 212, 255, 0.15);
+  margin-top: 20px;
+}
+
+/* 测试模式选择卡片 */
+.test-mode-section {
+  padding: 20px 24px;
+  position: relative;
+  z-index: 10;
+}
+
+.mode-tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  position: relative;
+}
+
+.mode-btn {
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  background: rgba(0, 212, 255, 0.05);
+  color: #7b8fa8;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  min-width: 120px;
+  position: relative;
+  z-index: 11;
+}
+
+.mode-btn:hover {
+  border-color: rgba(0, 212, 255, 0.6);
+  color: #00d4ff;
+  background: rgba(0, 212, 255, 0.1);
+}
+
+.mode-btn.active {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(157, 78, 221, 0.2) 100%);
+  border-color: #00d4ff;
+  color: #00d4ff;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+/* GPU 测试按钮 - 活动状态 */
+.mode-btn[data-mode="gpu"].active {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(157, 78, 221, 0.2) 100%);
+  border-color: #00d4ff;
+  color: #00d4ff;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+/* CPU 测试按钮 - 活动状态 */
+.mode-btn[data-mode="cpu"].active {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 145, 0, 0.2) 100%);
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.2);
+}
+
+/* 综合测试按钮 - 活动状态 */
+.mode-btn[data-mode="combined"].active {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(255, 107, 107, 0.2) 100%);
+  border-color: #c77dff;
+  color: #c77dff;
+  box-shadow: 0 0 20px rgba(199, 125, 255, 0.2);
+}
+
+/* CPU 信息区域 */
+.cpu-info-section {
+  display: block;
+}
+
+.cpu-info-section.hidden {
+  display: none;
+}
+
+.cpu-info-section .info-card {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.08) 0%, rgba(255, 145, 0, 0.05) 100%);
+  border-color: rgba(255, 107, 107, 0.2);
+}
+
+.cpu-info-section .info-card:hover {
+  border-color: rgba(255, 107, 107, 0.4);
+  box-shadow: 0 12px 24px rgba(255, 107, 107, 0.1);
+}
+
+/* CPU 测试状态显示 */
+.cpu-test-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.05) 0%, rgba(255, 145, 0, 0.05) 100%);
+  border: 2px dashed rgba(255, 107, 107, 0.3);
+  border-radius: 14px;
+  text-align: center;
+  min-height: 280px;
+}
+
+.cpu-test-status.hidden {
+  display: none;
+}
+
+.cpu-status-icon {
+  font-size: 4rem;
+  margin-bottom: 16px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.cpu-status-text {
+  font-size: 1.3rem;
+  color: #ff6b6b;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.cpu-cores-active {
+  font-size: 0.95rem;
+  color: #7b8fa8;
+}
+
+#cores-count {
+  color: #ff6b6b;
+  font-weight: 700;
+}
+
+/* optgroup 样式 */
+optgroup {
+  font-weight: 600;
+  color: #00d4ff;
+}
+
+optgroup[label*="CPU"] {
+  color: #ff6b6b;
+}
+
+/* 结果显示区域 - CPU 模式 */
+.cpu-mode .score-display {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.1) 0%, rgba(255, 145, 0, 0.08) 100%);
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.cpu-mode .score-value {
+  background: linear-gradient(90deg, #ff6b6b, #ff9100);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cpu-mode .detail-card {
+  background: linear-gradient(135deg, rgba(255, 107, 107, 0.06) 0%, rgba(255, 145, 0, 0.04) 100%);
+  border-color: rgba(255, 107, 107, 0.2);
+}
+
+.cpu-mode .detail-card h4::before {
+  color: #ff6b6b;
+}
+
+.cpu-mode .detail-score {
+  color: #ff6b6b;
+  text-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+}
+
+.cpu-mode .score-rating.rating-excellent {
+  background: linear-gradient(135deg, #00c853 0%, #00e676 100%);
+}
+
+/* 详细结果 - CPU 特定样式 */
+.detail-card .detail-ops {
+  font-size: 0.85rem;
+  color: #7b8fa8;
+  margin-top: 6px;
+}
+
+.detail-card .detail-extra {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .mode-tabs {
+    flex-direction: column;
+  }
+
+  .mode-btn {
+    width: 100%;
+  }
+
+  .cpu-test-status {
+    padding: 60px 20px;
+  }
+
+  .cpu-status-icon {
+    font-size: 3rem;
+  }
+
+  .cpu-status-text {
+    font-size: 1.1rem;
+  }
+}
+
