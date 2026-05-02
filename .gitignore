@@ -9,4 +9,5 @@
 /dataSources/
 /dataSources.local.xml
 /counter-app/node_modules/electron/dist/
+/image-viewre/node_modules/electron/dist/
 *.exe
