@@ -1,6 +1,6 @@
 <!-- ============================================================
-  Electron 图片查看器 - HTML 文件
-  文件路径: image-viewer/renderer/index.html
+  Electron 计数器应用 - HTML 文件
+  文件路径: counter-app/renderer/index.html
   ============================================================ -->
 
 <!DOCTYPE html>
@@ -15,136 +15,45 @@
   <!-- Content Security Policy (CSP) 内容安全策略
        用于防止 XSS 攻击，限制页面可以加载的资源来源
        - default-src 'self': 默认只允许同源资源
-       - script-src 'self': 只允许同源的脚本
-       - style-src 'self' 'unsafe-inline': 允许内联样式
-       - img-src 'self' data: 允许加载 Base64 编码的图片 -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+       - script-src 'self': 只允许同源的脚本 -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
 
   <!-- 网页标题 -->
-  <title>图片查看器</title>
+  <title>计数器应用</title>
 
   <!-- 引入外部 CSS 样式文件 -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <!-- ============================================================
-       自定义标题栏
-       用于窗口控制（最小化、最大化、关闭）
-       由于使用了 frame:false，需要自定义标题栏
-  ============================================================ -->
-  <header class="titlebar">
-    <!-- 标题栏左侧：应用图标和标题 -->
-    <div class="titlebar-drag">
-      <span class="app-icon">&#128444;</span>
-      <span class="app-title" id="appTitle">图片查看器</span>
+  <!-- 主容器 -->
+  <div class="container">
+    <!-- 标题 -->
+    <h1>计数器</h1>
+
+    <!-- 计数器显示区域
+         id="counter" 用于在 JavaScript 中获取 DOM 元素并更新数值 -->
+    <div class="counter-display" id="counter">0</div>
+
+    <!-- 按钮组 -->
+    <div class="button-group">
+      <!-- 减少按钮
+           id="decreaseBtn" 用于在 JavaScript 中绑定点击事件 -->
+      <button id="decreaseBtn" class="btn btn-decrease">-1</button>
+
+      <!-- 重置按钮
+           id="resetBtn" 用于在 JavaScript 中绑定点击事件 -->
+      <button id="resetBtn" class="btn btn-reset">重置</button>
+
+      <!-- 增加按钮
+           id="increaseBtn" 用于在 JavaScript 中绑定点击事件 -->
+      <button id="increaseBtn" class="btn btn-increase">+1</button>
     </div>
 
-    <!-- 标题栏右侧：窗口控制按钮 -->
-    <div class="titlebar-controls">
-      <!-- 最小化按钮 -->
-      <button class="titlebar-btn minimize" id="minimizeBtn" title="最小化">
-        <svg viewBox="0 0 12 12"><rect y="5" width="12" height="2"/></svg>
-      </button>
-
-      <!-- 最大化按钮 -->
-      <button class="titlebar-btn maximize" id="maximizeBtn" title="最大化">
-        <svg viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
-      </button>
-
-      <!-- 关闭按钮 -->
-      <button class="titlebar-btn close" id="closeBtn" title="关闭">
-        <svg viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="2"/></svg>
-      </button>
-    </div>
-  </header>
-
-  <!-- ============================================================
-       工具栏
-       包含图片操作按钮（打开、缩放、旋转等）
-  ============================================================ -->
-  <nav class="toolbar">
-    <!-- 打开图片按钮组 -->
-    <div class="toolbar-group">
-      <button class="toolbar-btn" id="openBtn" title="打开图片 (Ctrl+O)">
-        <span class="icon">&#128194;</span>
-        打开
-      </button>
-    </div>
-
-    <!-- 图片控制按钮组
-         初始隐藏，只有打开图片后才显示 -->
-    <div class="toolbar-group" id="imageControls" style="display: none;">
-      <!-- 缩小按钮 -->
-      <button class="toolbar-btn" id="zoomOutBtn" title="缩小 (Ctrl+-)">
-        <span class="icon">&#128269;</span>
-        缩小
-      </button>
-
-      <!-- 当前缩放级别显示 -->
-      <span class="zoom-level" id="zoomLevel">100%</span>
-
-      <!-- 放大按钮 -->
-      <button class="toolbar-btn" id="zoomInBtn" title="放大 (Ctrl++)">
-        <span class="icon">&#128269;</span>
-        放大
-      </button>
-
-      <!-- 适应窗口按钮 -->
-      <button class="toolbar-btn" id="fitBtn" title="适应窗口">
-        <span class="icon">&#128444;</span>
-        适应
-      </button>
-
-      <!-- 原始大小按钮 -->
-      <button class="toolbar-btn" id="actualSizeBtn" title="实际大小">
-        <span class="icon">1:1</span>
-        原始
-      </button>
-
-      <!-- 分隔线 -->
-      <span class="divider"></span>
-
-      <!-- 向左旋转按钮 -->
-      <button class="toolbar-btn" id="rotateLeftBtn" title="向左旋转">
-        <span class="icon">&#8634;</span>
-        左转
-      </button>
-
-      <!-- 向右旋转按钮 -->
-      <button class="toolbar-btn" id="rotateRightBtn" title="向右旋转">
-        <span class="icon">&#8635;</span>
-        右转
-      </button>
-    </div>
-  </nav>
-
-  <!-- ============================================================
-       图片显示区域
-       用于显示打开的图片
-  ============================================================ -->
-  <main class="image-container" id="imageContainer">
-    <!-- 占位符：没有图片时显示 -->
-    <div class="placeholder" id="placeholder">
-      <div class="placeholder-icon">&#128444;</div>
-      <p>点击"打开"按钮选择图片</p>
-      <p class="hint">支持 JPG, PNG, GIF, WebP, BMP, SVG</p>
-    </div>
-
-    <!-- 图片包装器：显示图片时使用 -->
-    <div class="image-wrapper" id="imageWrapper" style="display: none;">
-      <img id="imagePreview" alt="预览图片">
-    </div>
-  </main>
-
-  <!-- ============================================================
-       状态栏
-       显示图片信息（文件名、大小、尺寸）
-  ============================================================ -->
-  <footer class="status-bar">
-    <span id="imageName">-</span>
-    <span id="imageSize">-</span>
-    <span id="imageDimensions">-</span>
-  </footer>
+    <!-- 状态消息显示区域
+         用于显示操作结果（如 "已记录：+1"）
+         id="status" 用于在 JavaScript 中更新文本内容 -->
+    <p class="status" id="status"></p>
+  </div>
 
   <!-- 引入渲染进程的 JavaScript 脚本
        注意：script 标签在 body 最后，确保 DOM 元素已加载完成 -->
@@ -161,18 +70,17 @@
   2. <head> 头部部分：
      - meta charset: 设置字符编码，防止中文乱码
      - meta viewport: 确保响应式布局正常
-     - meta CSP: 内容安全策略，允许加载 data: 图片
+     - meta CSP: 内容安全策略，防止 XSS 攻击
 
-  3. <body> 主体部分结构：
-     - .titlebar: 自定义标题栏，包含窗口控制按钮
-     - .toolbar: 工具栏，包含图片操作按钮
-     - .image-container: 图片显示区域
-     - .status-bar: 状态栏，显示图片信息
+  3. <body> 主体部分：
+     - .container: 主容器，包含所有内容
+     - h1: 页面标题
+     - .counter-display: 计数器数值显示
+     - .button-group: 按钮组容器
+     - .btn: 通用按钮样式
+     - .status: 状态消息显示
 
-  4. 页面布局采用 Flex 布局：
-     - 垂直方向：titlebar → toolbar → image-container → status-bar
-     - 水平方向：标题栏左侧 → 窗口控制按钮
-
-  5. script 标签位置：
+  4. script 标签位置：
      - 放在 body 末尾，确保 DOM 元素已加载
+     - 也可以使用 defer 属性放在 head 中
 -->

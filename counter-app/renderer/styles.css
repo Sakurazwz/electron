@@ -1,10 +1,10 @@
 /* ============================================================
-   Electron 图片查看器 - CSS 样式文件
-   文件路径: image-viewer/renderer/styles.css
+   Electron 计数器应用 - CSS 样式文件
+   文件路径: counter-app/renderer/styles.css
    ============================================================ */
 
 /* ============================================================
-   1. 基础重置样式
+   基础重置样式
    ============================================================ */
 
 /* * 选择器：选择所有元素
@@ -18,428 +18,218 @@
 }
 
 /* ============================================================
-   2. 页面整体样式
+   页面整体样式
    ============================================================ */
 
 /* body: 页面主体
    - font-family: 设置字体，优先使用系统字体
-   - background: 设置深色背景
-   - height: 100vh（视口高度的 100%）
-   - display: flex + flex-direction 实现垂直布局
-   - overflow: hidden 防止页面滚动 */
+   - background: 设置渐变背景（紫色调）
+   - min-height: 最小高度为视口高度
+   - display: flex + justify-content + align-items 实现垂直水平居中 */
 body {
   /* 字体设置：依次尝试使用苹果系统字体、Segoe UI、Roboto 等 */
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* 背景色：深灰色 (#1e1e1e) */
-  background: #1e1e1e;
+  /* 背景渐变：从左下角的 #667eea 到右下角的 #764ba2 */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 
-  /* 文字颜色：白色 */
-  color: #ffffff;
+  /* 最小高度：视口高度的 100% */
+  min-height: 100vh;
 
-  /* 高度：视口高度的 100%，占满整个窗口 */
-  height: 100vh;
-
-  /* Flex 布局：垂直排列子元素 */
+  /* Flex 布局：让内容居中显示 */
   display: flex;
-  flex-direction: column;
-
-  /* 隐藏溢出：防止出现滚动条 */
-  overflow: hidden;
-
-  /* user-select: none 禁止选中文字
-     这样用户在点击按钮时不会意外选中文本 */
-  user-select: none;
-}
-
-/* ============================================================
-   3. 自定义标题栏样式
-   ============================================================ */
-
-/* .titlebar: 标题栏容器
-   位于窗口顶部，用于窗口控制按钮 */
-.titlebar {
-  /* Flex 布局：水平排列 */
-  display: flex;
-
-  /* 水平方向：两端对齐（左侧标题、右侧控制按钮） */
-  justify-content: space-between;
-
-  /* 垂直方向：居中对齐 */
-  align-items: center;
-
-  /* 高度：32px，与系统标题栏高度一致 */
-  height: 32px;
-
-  /* 背景色：深灰色 */
-  background: #2d2d2d;
-
-  /* 底部边框：1px 深色线条 */
-  border-bottom: 1px solid #3d3d3d;
-}
-
-/* .titlebar-drag: 标题栏拖动区域
-   用户可以拖动这个区域来移动窗口 */
-.titlebar-drag {
-  /* Flex 布局：水平排列元素 */
-  display: flex;
-
-  /* 垂直方向：居中对齐 */
-  align-items: center;
-
-  /* 元素之间的间距：8px */
-  gap: 8px;
-
-  /* 内边距：左侧 12px */
-  padding: 0 12px;
-
-  /* flex: 1 让这个区域占据所有可用空间 */
-  flex: 1;
-
-  /* -webkit-app-region: drag 使这个区域可以拖动窗口
-     这是 Electron 特有的 CSS 属性 */
-  -webkit-app-region: drag;
-}
-
-/* .app-icon: 应用图标 */
-.app-icon {
-  /* 字体大小：16px */
-  font-size: 16px;
-}
-
-/* .app-title: 应用标题文字 */
-.app-title {
-  /* 字体大小：12px */
-  font-size: 12px;
-
-  /* 文字颜色：浅灰色 */
-  color: #cccccc;
-}
-
-/* .titlebar-controls: 窗口控制按钮容器 */
-.titlebar-controls {
-  /* Flex 布局：水平排列按钮 */
-  display: flex;
-
-  /* -webkit-app-region: no-drag 使按钮区域不可拖动
-     这样点击按钮时不会触发窗口拖动 */
-  -webkit-app-region: no-drag;
-}
-
-/* .titlebar-btn: 窗口控制按钮通用样式
-   包含最小化、最大化、关闭按钮 */
-.titlebar-btn {
-  /* 宽度：46px */
-  width: 46px;
-
-  /* 高度：32px */
-  height: 32px;
-
-  /* 无边框 */
-  border: none;
-
-  /* 背景透明 */
-  background: transparent;
-
-  /* 鼠标指针：手型，表示可点击 */
-  cursor: pointer;
-
-  /* Flex 布局：居中显示 SVG 图标 */
-  display: flex;
-  align-items: center;
   justify-content: center;
-
-  /* 过渡效果：背景色变化时使用 0.2 秒的过渡 */
-  transition: background 0.2s;
-}
-
-/* SVG 图标样式 */
-.titlebar-btn svg {
-  /* 宽度：12px */
-  width: 12px;
-
-  /* 高度：12px */
-  height: 12px;
-}
-
-/* .titlebar-btn:hover: 鼠标悬停时的样式 */
-.titlebar-btn:hover {
-  /* 背景色：半透明白色 */
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* .titlebar-btn.close:hover: 关闭按钮悬停时使用红色 */
-.titlebar-btn.close:hover {
-  /* 背景色：红色 (#e81123) */
-  background: #e81123;
+  align-items: center;
 }
 
 /* ============================================================
-   4. 工具栏样式
+   主容器样式
    ============================================================ */
 
-/* .toolbar: 工具栏容器
-   位于标题栏下方，包含图片操作按钮 */
-.toolbar {
-  /* Flex 布局：垂直居中 */
-  display: flex;
-  align-items: center;
+/* .container: 主容器，包含所有 UI 元素
+   白色背景、圆角、阴影 */
+.container {
+  /* 背景白色 */
+  background: white;
 
-  /* 内边距：上下 8px，左右 16px */
-  padding: 8px 16px;
+  /* 内边距：四周都是 40px */
+  padding: 40px;
 
-  /* 背景色：深灰色 */
-  background: #2d2d2d;
+  /* 圆角：16px，使边角圆润 */
+  border-radius: 16px;
 
-  /* 底部边框 */
-  border-bottom: 1px solid #3d3d3d;
+  /* 阴影：
+     - 水平偏移: 10px
+     - 垂直偏移: 40px
+     - 模糊半径: 40px
+     - 颜色: 半透明黑色 (rgba(0, 0, 0, 0.2)) */
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 
-  /* 元素之间的间距：8px */
-  gap: 8px;
-}
-
-/* .toolbar-group: 工具栏按钮组容器
-   将相关按钮分组显示 */
-.toolbar-group {
-  /* Flex 布局：水平排列 */
-  display: flex;
-
-  /* 垂直居中 */
-  align-items: center;
-
-  /* 按钮之间的间距：4px */
-  gap: 4px;
-}
-
-/* .toolbar-btn: 工具栏按钮通用样式 */
-.toolbar-btn {
-  /* Flex 布局：水平和垂直居中 */
-  display: flex;
-  align-items: center;
-
-  /* 图标和文字之间的间距：6px */
-  gap: 6px;
-
-  /* 内边距：上下 6px，左右 12px */
-  padding: 6px 12px;
-
-  /* 背景色：深灰色 */
-  background: #3d3d3d;
-
-  /* 无边框 */
-  border: none;
-
-  /* 圆角：4px */
-  border-radius: 4px;
-
-  /* 文字颜色：白色 */
-  color: #ffffff;
-
-  /* 字体大小：12px */
-  font-size: 12px;
-
-  /* 鼠标指针：手型 */
-  cursor: pointer;
-
-  /* 过渡效果 */
-  transition: background 0.2s;
-}
-
-/* .toolbar-btn:hover: 鼠标悬停时 */
-.toolbar-btn:hover {
-  /* 背景色变亮 */
-  background: #4d4d4d;
-}
-
-/* .toolbar-btn:active: 按钮按下时 */
-.toolbar-btn:active {
-  /* 背景色更深 */
-  background: #5d5d5d;
-}
-
-/* .toolbar-btn .icon: 按钮图标 */
-.toolbar-btn .icon {
-  /* 字体大小：14px */
-  font-size: 14px;
-}
-
-/* .zoom-level: 缩放级别显示文本 */
-.zoom-level {
-  /* 最小宽度：50px */
-  min-width: 50px;
-
-  /* 文字居中 */
+  /* 文本居中 */
   text-align: center;
 
-  /* 字体大小：12px */
-  font-size: 12px;
-
-  /* 文字颜色：浅灰色 */
-  color: #cccccc;
-}
-
-/* .divider: 分隔线
-   用于分隔不同组的按钮 */
-.divider {
-  /* 宽度：1px */
-  width: 1px;
-
-  /* 高度：20px */
-  height: 20px;
-
-  /* 背景色：深灰色 */
-  background: #4d4d4d;
-
-  /* 左右外边距：8px */
-  margin: 0 8px;
+  /* 最小宽度：300px，防止布局过窄 */
+  min-width: 300px;
 }
 
 /* ============================================================
-   5. 图片显示区域样式
+   标题样式
    ============================================================ */
 
-/* .image-container: 图片显示区域容器
-   这是页面中最大的区域，用于显示图片 */
-.image-container {
-  /* flex: 1 让这个区域占据所有剩余空间 */
-  flex: 1;
-
-  /* Flex 布局：水平和垂直居中 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  /* 隐藏溢出内容 */
-  overflow: auto;
-
-  /* 背景色：更深灰色 */
-  background: #1a1a1a;
-}
-
-/* .placeholder: 占位符
-   当没有打开图片时显示的提示 */
-.placeholder {
-  /* 文字居中 */
-  text-align: center;
-
-  /* 文字颜色：灰色 */
-  color: #666;
-}
-
-/* .placeholder-icon: 占位符图标 */
-.placeholder-icon {
-  /* 字体大小：80px（大图标） */
-  font-size: 80px;
+/* h1: 主标题 */
+h1 {
+  /* 文字颜色：深灰色 */
+  color: #333;
 
   /* 底部外边距：20px */
   margin-bottom: 20px;
+
+  /* 字体大小：24px */
+  font-size: 24px;
 }
 
-/* .placeholder p: 占位符中的段落 */
-.placeholder p {
-  /* 上下外边距：8px */
-  margin: 8px 0;
+/* ============================================================
+   计数器显示区域样式
+   ============================================================ */
+
+/* .counter-display: 显示计数器数值的区域 */
+.counter-display {
+  /* 字体大小：72px，大数字才能看清 */
+  font-size: 72px;
+
+  /* 字体粗细：bold（加粗） */
+  font-weight: bold;
+
+  /* 文字颜色：与背景渐变呼应 */
+  color: #667eea;
+
+  /* 上下外边距：20px */
+  margin: 20px 0;
+
+  /* 文字阴影：增加立体感 */
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================================
+   按钮组容器样式
+   ============================================================ */
+
+/* .button-group: 包含所有按钮的容器 */
+.button-group {
+  /* 使用 Flex 布局 */
+  display: flex;
+
+  /* 水平居中 */
+  justify-content: center;
+
+  /* 按钮之间的间距：10px */
+  gap: 10px;
+
+  /* 顶部外边距：20px */
+  margin-top: 20px;
+}
+
+/* ============================================================
+   按钮通用样式
+   ============================================================ */
+
+/* .btn: 所有按钮的通用样式 */
+.btn {
+  /* 内边距：上下 12px，左右 24px */
+  padding: 12px 24px;
 
   /* 字体大小：16px */
   font-size: 16px;
+
+  /* 去除边框 */
+  border: none;
+
+  /* 圆角：8px */
+  border-radius: 8px;
+
+  /* 鼠标指针：变成手型，表示可点击 */
+  cursor: pointer;
+
+  /* 过渡效果：所有属性变化时都使用 0.3 秒的过渡
+     使动画更平滑 */
+  transition: all 0.3s ease;
+
+  /* 字体粗细：bold */
+  font-weight: bold;
 }
 
-/* .placeholder .hint: 提示文字（支持格式说明） */
-.placeholder .hint {
+/* .btn:hover: 鼠标悬停时的样式 */
+.btn:hover {
+  /* 向上移动 2px，产生轻微的上升效果 */
+  transform: translateY(-2px);
+
+  /* 阴影：增加立体感 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* .btn:active: 按钮按下时的样式 */
+.btn:active {
+  /* 恢复原位置 */
+  transform: translateY(0);
+}
+
+/* ============================================================
+   特定按钮样式
+   ============================================================ */
+
+/* .btn-increase: 增加按钮（绿色） */
+.btn-increase {
+  /* 背景色：绿色 */
+  background: #4CAF50;
+
+  /* 文字颜色：白色 */
+  color: white;
+}
+
+/* .btn-increase:hover: 增加按钮悬停时 */
+.btn-increase:hover {
+  /* 背景色变深 */
+  background: #45a049;
+}
+
+/* .btn-decrease: 减少按钮（红色） */
+.btn-decrease {
+  background: #f44336;
+  color: white;
+}
+
+.btn-decrease:hover {
+  background: #da190b;
+}
+
+/* .btn-reset: 重置按钮（橙色） */
+.btn-reset {
+  background: #ff9800;
+  color: white;
+}
+
+.btn-reset:hover {
+  background: #e68900;
+}
+
+/* ============================================================
+   状态消息样式
+   ============================================================ */
+
+/* .status: 状态消息显示区域 */
+.status {
+  /* 顶部外边距：15px */
+  margin-top: 15px;
+
   /* 字体大小：12px */
   font-size: 12px;
 
-  /* 文字颜色：更深灰色 */
-  color: #444;
-}
+  /* 文字颜色：浅灰色 */
+  color: #999;
 
-/* .image-wrapper: 图片包装器
-   用于包裹 img 元素，实现居中显示 */
-.image-wrapper {
-  /* Flex 布局：水平和垂直居中 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  /* 内边距：20px */
-  padding: 20px;
-}
-
-/* #imagePreview: 图片预览元素 */
-#imagePreview {
-  /* 不限制最大宽度，允许图片按缩放比例显示 */
-  max-width: none;
-
-  /* 过渡效果：transform 变化时使用 0.3 秒的动画 */
-  transition: transform 0.3s ease;
-}
-
-/* ============================================================
-   6. 状态栏样式
-   ============================================================ */
-
-/* .status-bar: 状态栏
-   位于窗口底部，显示图片信息 */
-.status-bar {
-  /* Flex 布局：水平排列 */
-  display: flex;
-
-  /* 垂直居中 */
-  align-items: center;
-
-  /* 元素之间的间距：24px */
-  gap: 24px;
-
-  /* 内边距：上下 4px，左右 16px */
-  padding: 4px 16px;
-
-  /* 背景色：深灰色 */
-  background: #2d2d2d;
-
-  /* 顶部边框 */
-  border-top: 1px solid #3d3d3d;
-
-  /* 字体大小：11px */
-  font-size: 11px;
-
-  /* 文字颜色：灰色 */
-  color: #888;
-}
-
-/* ============================================================
-   7. 滚动条样式
-   ============================================================ */
-
-/* Webkit 内核浏览器的滚动条样式（Chrome、Safari、Edge） */
-
-/* ::-webkit-scrollbar: 滚动条整体 */
-::-webkit-scrollbar {
-  /* 宽度：10px */
-  width: 10px;
-
-  /* 高度：10px */
-  height: 10px;
-}
-
-/* ::-webkit-scrollbar-track: 滚动条轨道（背景） */
-::-webkit-scrollbar-track {
-  /* 背景色 */
-  background: #1a1a1a;
-}
-
-/* ::-webkit-scrollbar-thumb: 滚动条滑块 */
-::-webkit-scrollbar-thumb {
-  /* 背景色：深灰色 */
-  background: #4d4d4d;
-
-  /* 圆角：5px */
-  border-radius: 5px;
-}
-
-/* ::-webkit-scrollbar-thumb:hover: 鼠标悬停时 */
-::-webkit-scrollbar-thumb:hover {
-  /* 背景色变亮 */
-  background: #5d5d5d;
+  /* 最小高度：18px
+     防止没有文本时布局跳动 */
+  min-height: 18px;
 }
 
 /* ============================================================
@@ -464,11 +254,4 @@ body {
    4. box-sizing: border-box
       - 防止 padding 和 border 增加元素尺寸
       - 使布局更容易控制
-
-   5. -webkit-app-region: drag
-      - Electron 特有属性
-      - 让元素区域可以拖动窗口
-
-   6. ::-webkit-scrollbar
-      - Webkit 内核浏览器的滚动条样式
-      - 用于美化滚动条 */
+*/

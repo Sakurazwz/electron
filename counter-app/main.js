@@ -1,60 +1,29 @@
 // ============================================================
-// Electron 图片查看器 - 主进程入口文件
-// 文件路径: image-viewer/main.js
-// ============================================================
-//
-// 本文件是 Electron 应用的主进程入口点
-// 主进程运行在 Node.js 环境中，可以访问所有 Node.js API
-// 负责管理应用程序的生命周期、窗口、文件操作等
+// Electron 计数器应用 - 主进程入口文件
+// 文件路径: counter-app/main.js
 // ============================================================
 
-// ============================================================
-// 引入 Electron 核心模块
-// ============================================================
-// - app: 控制应用程序的生命周期（启动、退出等）
+// 引入 Electron 的核心模块
+// - app: 控制应用程序的生命周期
 // - BrowserWindow: 创建和管理浏览器窗口
 // - ipcMain: 处理主进程与渲染进程之间的 IPC 通信
-// - dialog: 原生对话框（文件选择框、消息框等）
-// - nativeImage: 用于处理图片（读取尺寸、转换等）
-const { app, BrowserWindow, ipcMain, dialog, nativeImage } = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 
 // 引入 Node.js 的 path 模块，用于处理文件路径
 const path = require('path')
-
-// 引入 Node.js 的 fs 模块，用于读取文件
-const fs = require('fs')
-
-// ============================================================
-// 全局变量
-// ============================================================
 
 // 保存主窗口的引用
 // 注意：如果不保存引用，窗口对象会被垃圾回收，导致窗口意外关闭
 let mainWindow = null
 
-// 当前打开的图片路径
-let currentImagePath = null
-
-// 当前缩放级别（默认为 1，即 100%）
-// 范围：0.1 到 5，即 10% 到 500%
-let zoomLevel = 1
-
 // ============================================================
-// 创建浏览器窗口函数
+// 创建浏览器窗口的函数
 // ============================================================
 function createWindow() {
   // 创建新窗口，配置窗口属性
   mainWindow = new BrowserWindow({
-    width: 1000,        // 窗口宽度（像素）
-    height: 700,       // 窗口高度（像素）
-
-    // 最小窗口尺寸限制，防止窗口过小影响使用
-    minWidth: 600,    // 最小宽度
-    minHeight: 400,   // 最小高度
-
-    // frame: false 表示使用无边框窗口
-    // 这样可以自定义标题栏，实现类似原生应用的体验
-    frame: false,
+    width: 400,        // 窗口宽度（像素）
+    height: 300,       // 窗口高度（像素）
 
     // webPreferences: 配置网页相关的选项（安全相关）
     webPreferences: {
@@ -69,197 +38,18 @@ function createWindow() {
       // contextIsolation: 是否启用上下文隔离
       // true: 启用（推荐），防止渲染进程修改预加载脚本暴露的 API
       contextIsolation: true
-    },
-
-    // 设置窗口图标（可选，如果没有图标文件可以删除这行）
-    // icon: path.join(__dirname, 'assets/icon.png')
+    }
   })
 
-  // 加载渲染进程的 HTML 文件
-  // 路径相对于项目根目录
+  // 加载渲染进程的文件（index.html）
+  // 注意：路径相对于项目根目录，不需要加 renderer/ 前缀
+  // 因为我们已经将 renderer 目录作为相对路径的一部分
   mainWindow.loadFile('renderer/index.html')
 
   // 开发时自动打开开发者工具（DevTools）
-  // 生产环境可以删除这行
+  // 生产环境可以删除这行，或者使用条件判断
   mainWindow.webContents.openDevTools()
 }
-
-// ============================================================
-// IPC 通信处理 - 图片操作
-// ============================================================
-//
-// IPC (Inter-Process Communication，进程间通信) 机制允许主进程和渲染进程交换数据
-// 使用 ipcMain.handle() 在主进程中注册处理器
-// 使用 ipcRenderer.invoke() 在渲染进程中发送请求
-// ============================================================
-
-/**
- * 打开图片文件
- * 使用原生对话框让用户选择图片，然后读取并返回给渲染进程
- */
-ipcMain.handle('image:open', async () => {
-  // 显示打开文件对话框
-  // 参数说明：
-  // - mainWindow: 父窗口
-  // - title: 对话框标题
-  // - filters: 文件过滤器，只显示指定类型的文件
-  // - properties: 对话框属性，openFile 表示只能选择一个文件
-  const result = await dialog.showOpenDialog(mainWindow, {
-    title: '选择图片',
-    filters: [
-      // 支持的图片格式
-      { name: '图片文件', extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'] },
-      { name: '所有文件', extensions: ['*'] }
-    ],
-    properties: ['openFile']
-  })
-
-  // 如果用户取消选择或没有选择文件，返回 null
-  if (result.canceled || result.filePaths.length === 0) {
-    return null
-  }
-
-  // 获取选择的文件路径
-  const filePath = result.filePaths[0]
-
-  // 保存当前图片路径
-  currentImagePath = filePath
-
-  // 重置缩放级别
-  zoomLevel = 1
-
-  // 读取图片文件并转换为 Base64 格式
-  try {
-    // 使用 fs 模块读取图片文件
-    const imageBuffer = fs.readFileSync(filePath)
-
-    // 获取文件扩展名，用于确定 MIME 类型
-    const ext = path.extname(filePath).toLowerCase()
-
-    // 根据文件扩展名确定 MIME 类型
-    // MIME 类型用于构建 data URL
-    let mimeType = 'image/jpeg'  // 默认值
-
-    switch (ext) {
-      case '.png':
-        mimeType = 'image/png'
-        break
-      case '.gif':
-        mimeType = 'image/gif'
-        break
-      case '.webp':
-        mimeType = 'image/webp'
-        break
-      case '.svg':
-        mimeType = 'image/svg+xml'
-        break
-      case '.bmp':
-        mimeType = 'image/bmp'
-        break
-      // jpg/jpeg 使用默认的 image/jpeg
-    }
-
-    // 将图片数据转换为 Base64 编码
-    const base64 = imageBuffer.toString('base64')
-
-    // 构建 data URL，格式：data:[MIME类型];base64,[数据]
-    const dataUrl = `data:${mimeType};base64,${base64}`
-
-    // 使用 nativeImage 获取图片尺寸
-    const image = nativeImage.createFromBuffer(imageBuffer)
-    const size = image.getSize()
-
-    // 返回图片信息给渲染进程
-    return {
-      path: filePath,           // 文件完整路径
-      name: path.basename(filePath),  // 文件名
-      dataUrl: dataUrl,         // Base64 编码的图片数据
-      width: size.width,       // 图片宽度
-      height: size.height      // 图片高度
-    }
-  } catch (error) {
-    // 错误处理：显示错误对话框
-    dialog.showErrorBox('打开图片失败', error.message)
-    return null
-  }
-})
-
-/**
- * 缩放图片
- * @param {string} direction - 缩放方向：'in' 放大，'out' 缩小
- * @param {number} direction - 也可以直接传入数字表示缩放级别
- */
-ipcMain.handle('image:zoom', (event, direction) => {
-  // 根据参数类型处理
-  if (direction === 'in') {
-    // 放大：增加 10%，最大 500%
-    zoomLevel = Math.min(zoomLevel + 0.1, 5)
-  } else if (direction === 'out') {
-    // 缩小：减少 10%，最小 10%
-    zoomLevel = Math.max(zoomLevel - 0.1, 0.1)
-  } else if (typeof direction === 'number') {
-    // 直接设置缩放级别
-    zoomLevel = direction
-  }
-
-  // 返回当前缩放级别
-  return zoomLevel
-})
-
-/**
- * 获取当前缩放级别
- */
-ipcMain.handle('image:getZoom', () => {
-  return zoomLevel
-})
-
-/**
- * 旋转图片
- * @param {number} angle - 旋转角度
- */
-ipcMain.handle('image:rotate', (event, angle) => {
-  // 这里只是简单返回角度，实际的旋转在渲染进程中使用 CSS 实现
-  return { angle }
-})
-
-// ============================================================
-// IPC 通信处理 - 窗口控制
-// ============================================================
-
-/**
- * 最小化窗口
- */
-ipcMain.on('window:minimize', () => {
-  mainWindow.minimize()
-})
-
-/**
- * 切换最大化/还原窗口
- * 如果窗口已最大化，则还原；否则最大化
- */
-ipcMain.on('window:maximize', () => {
-  if (mainWindow.isMaximized()) {
-    // 还原窗口
-    mainWindow.unmaximize()
-  } else {
-    // 最大化窗口
-    mainWindow.maximize()
-  }
-})
-
-/**
- * 关闭窗口
- */
-ipcMain.on('window:close', () => {
-  mainWindow.close()
-})
-
-/**
- * 获取窗口是否最大化
- */
-ipcMain.handle('window:isMaximized', () => {
-  return mainWindow.isMaximized()
-})
 
 // ============================================================
 // 应用程序生命周期事件处理
@@ -295,40 +85,53 @@ app.on('window-all-closed', () => {
 })
 
 // ============================================================
-// 代码结构说明
+// IPC 通信处理
+// ============================================================
+//
+// IPC (Inter-Process Communication，进程间通信) 机制允许主进程和渲染进程交换数据
+//
+// 通信模式：
+// 1. 渲染进程 -> 主进程：使用 ipcRenderer.invoke() 发送请求
+// 2. 主进程 -> 渲染进程：使用 ipcMain.handle() 接收请求并返回响应
+//
+
+// 注册一个 IPC 处理器，用于处理渲染进程发来的计数器操作请求
+//
+// 参数说明：
+// - 'counter:operation': IPC 通道名称，用于标识这个特定的通信通道
+// - event: 事件对象，包含发送方的信息
+// - operation: 从渲染进程传来的操作类型（如 'increase', 'decrease', 'reset'）
+ipcMain.handle('counter:operation', (event, operation) => {
+  // event 是事件对象，operation 是渲染进程传来的参数
+
+  // 在主进程的控制台打印日志（可以在 DevTools 中查看）
+  console.log(`Received operation: ${operation}`)
+
+  // 返回一个结果对象给渲染进程
+  // 无论操作是什么，我们只返回成功状态，因为这只是一个演示
+  return { success: true, operation }
+})
+
+// ============================================================
+// 代码说明：
 // ============================================================
 //
 // 1. 主进程 (main.js) 是 Electron 应用的入口点
-//    - 运行在 Node.js 环境中
+//    - 它运行在 Node.js 环境中
 //    - 可以访问所有 Node.js API
 //    - 负责管理应用程序的生命周期和窗口
 //
 // 2. BrowserWindow 用于创建应用窗口
 //    - 每个窗口对应一个渲染进程
-//    - frame: false 启用无边框窗口，用于自定义标题栏
 //    - webPreferences 用于配置窗口的安全选项
 //
 // 3. IPC 通信是主进程和渲染进程之间交换数据的主要方式
 //    - 使用 ipcMain.handle() 在主进程中注册处理器
 //    - 使用 ipcRenderer.invoke() 在渲染进程中发送请求
-//    - 支持请求-响应模式
+//    - 这种模式是双向的，支持请求-响应
 //
-// 4. 图片加载流程：
-//    - 渲染进程请求打开图片
-//    - 主进程显示文件选择对话框
-//    - 用户选择图片后，主进程读取文件
-//    - 使用 nativeImage 获取图片尺寸
-//    - 将图片转换为 Base64 编码的 data URL
-//    - 返回图片信息给渲染进程
-//
-// 5. 窗口控制：
-//    - 最小化：mainWindow.minimize()
-//    - 最大化：mainWindow.maximize()
-//    - 还原：mainWindow.unmaximize()
-//    - 关闭：mainWindow.close()
-//    - 查询状态：mainWindow.isMaximized()
-//
-// 6. 安全最佳实践：
+// 4. 安全最佳实践：
 //    - nodeIntegration: false - 禁用渲染进程直接使用 Node.js
 //    - contextIsolation: true - 启用上下文隔离
 //    - 使用 preload 脚本安全地暴露 API
+//

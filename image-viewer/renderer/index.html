@@ -1,0 +1,346 @@
+<!--
+  ============================================================
+  渲染进程 HTML 文件 - Electron 图片查看器（增强版）
+  ============================================================
+  这是应用的用户界面，包含：
+  1. 自定义标题栏（最小化、最大化、关闭按钮）
+  2. 工具栏（打开图片、缩放、旋转、幻灯片、裁剪、滤镜等）
+  3. 主内容区域（图片显示 + 信息面板）
+  4. 幻灯片控制
+  5. 状态栏（显示图片信息）
+  ============================================================
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--
+    Content-Security-Policy (CSP) 是安全策略，用于防止 XSS 攻击
+    default-src 'self': 只允许加载同源资源
+    script-src 'self': 只允许执行同源脚本
+    style-src 'self' 'unsafe-inline': 允许同源样式和内联样式
+    img-src 'self' data:: 允许加载同源图片和 data URL
+  -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>图片查看器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!--
+    ==================== 自定义标题栏 ====================
+    由于设置了 frame: false，我们需要自己实现标题栏
+    -webkit-app-region: drag 使区域可以拖动窗口
+    按钮区域设置 -webkit-app-region: no-drag 使按钮可点击
+  -->
+  <header class="titlebar">
+    <!-- 可拖动区域：显示应用图标和标题 -->
+    <div class="titlebar-drag">
+      <span class="app-icon">&#128444;</span>
+      <span class="app-title" id="appTitle">图片查看器</span>
+    </div>
+    <!-- 窗口控制按钮区域 -->
+    <div class="titlebar-controls">
+      <!-- 最小化按钮 -->
+      <button class="titlebar-btn minimize" id="minimizeBtn" title="最小化">
+        <svg viewBox="0 0 12 12"><rect y="5" width="12" height="2"/></svg>
+      </button>
+      <!-- 最大化/取消最大化按钮 -->
+      <button class="titlebar-btn maximize" id="maximizeBtn" title="最大化">
+        <svg viewBox="0 0 12 12"><rect x="1" y="1" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      <!-- 关闭按钮 -->
+      <button class="titlebar-btn close" id="closeBtn" title="关闭">
+        <svg viewBox="0 0 12 12"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!--
+    ==================== 工具栏 ====================
+    包含所有图片操作按钮
+  -->
+  <nav class="toolbar">
+    <!-- 基础操作组 -->
+    <div class="toolbar-group">
+      <button class="toolbar-btn" id="openBtn" title="打开图片 (Ctrl+O)">
+        <span class="icon">📂</span>
+        打开
+      </button>
+    </div>
+
+    <!-- 切换图片组（多图浏览） -->
+    <div class="toolbar-group" id="navControls" style="display: none;">
+      <button class="toolbar-btn" id="prevBtn" title="上一张 (←)">
+        <span class="icon">←</span>
+        上一张
+      </button>
+      <span class="nav-counter" id="navCounter">1 / 5</span>
+      <button class="toolbar-btn" id="nextBtn" title="下一张 (→)">
+        下一张
+        <span class="icon">→</span>
+      </button>
+    </div>
+
+    <!-- 图片操作组（加载图片后显示） -->
+    <div class="toolbar-group" id="imageControls" style="display: none;">
+      <button class="toolbar-btn" id="zoomOutBtn" title="缩小 (Ctrl+-)">
+        <span class="icon">🔍</span>
+      </button>
+      <span class="zoom-level" id="zoomLevel">100%</span>
+      <button class="toolbar-btn" id="zoomInBtn" title="放大 (Ctrl++)">
+        <span class="icon">🔍</span>
+      </button>
+      <span class="divider"></span>
+      <button class="toolbar-btn" id="fitBtn" title="适应窗口">
+        <span class="icon">🖼</span>
+        适应
+      </button>
+      <button class="toolbar-btn" id="actualSizeBtn" title="实际大小">
+        <span class="icon">1:1</span>
+        原始
+      </button>
+      <span class="divider"></span>
+      <button class="toolbar-btn" id="rotateLeftBtn" title="向左旋转">
+        <span class="icon">⟲</span>
+      </button>
+      <button class="toolbar-btn" id="rotateRightBtn" title="向右旋转">
+        <span class="icon">⟳</span>
+      </button>
+    </div>
+
+    <!-- 高级功能组 -->
+    <div class="toolbar-group" id="advancedControls" style="display: none;">
+      <span class="divider"></span>
+      <button class="toolbar-btn" id="slideshowBtn" title="幻灯片模式">
+        <span class="icon">▶</span>
+        幻灯片
+      </button>
+      <button class="toolbar-btn" id="infoBtn" title="显示/隐藏信息面板">
+        <span class="icon">📰</span>
+        信息
+      </button>
+      <button class="toolbar-btn" id="cropBtn" title="裁剪图片">
+        <span class="icon">✂</span>
+        裁剪
+      </button>
+      <button class="toolbar-btn" id="filterBtn" title="滤镜效果">
+        <span class="icon">🎨</span>
+        滤镜
+      </button>
+    </div>
+  </nav>
+
+  <!--
+    ==================== 幻灯片控制栏（默认隐藏）====================
+    幻灯片模式启动时显示
+  -->
+  <div class="slideshow-bar" id="slideshowBar" style="display: none;">
+    <span class="slideshow-label">幻灯片模式</span>
+    <div class="slideshow-controls">
+      <label>
+        间隔：
+        <input type="range" id="slideshowDelay" min="1000" max="10000" step="500" value="3000">
+        <span id="delayValue">3s</span>
+      </label>
+      <button class="toolbar-btn" id="stopSlideshowBtn">
+        <span class="icon">■</span>
+        停止
+      </button>
+    </div>
+  </div>
+
+  <!--
+    ==================== 主内容区域 ====================
+    图片显示 + 信息面板
+  -->
+  <div class="main-content">
+    <!-- 图片显示区域 -->
+    <main class="image-area" id="imageArea">
+      <!-- 占位符提示 -->
+      <div class="placeholder" id="placeholder">
+        <div class="placeholder-icon">🖼</div>
+        <p>将图片拖放到此处，或点击"打开"按钮</p>
+        <p class="hint">支持 JPG, PNG, GIF, WebP, BMP, SVG 格式</p>
+      </div>
+
+      <!-- 图片容器 -->
+      <div class="image-container" id="imageContainer" style="display: none;">
+        <div class="image-wrapper" id="imageWrapper">
+          <img id="imagePreview" alt="预览图片">
+          <!-- 裁剪遮罩（裁剪模式时显示）-->
+          <div class="crop-overlay" id="cropOverlay" style="display: none;">
+            <div class="crop-selection" id="cropSelection"></div>
+            <div class="crop-mask crop-mask-top"></div>
+            <div class="crop-mask crop-mask-bottom"></div>
+            <div class="crop-mask crop-mask-left"></div>
+            <div class="crop-mask crop-mask-right"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 左右切换箭头（多图时显示）-->
+      <button class="nav-arrow nav-arrow-left" id="navArrowLeft" style="display: none;" title="上一张 (←)">
+        <span>‹</span>
+      </button>
+      <button class="nav-arrow nav-arrow-right" id="navArrowRight" style="display: none;" title="下一张 (→)">
+        <span>›</span>
+      </button>
+    </main>
+
+    <!-- 信息面板（可折叠的侧边栏）-->
+    <aside class="info-panel" id="infoPanel" style="display: none;">
+      <div class="info-header">
+        <h3>📰 图片信息</h3>
+        <button class="close-panel-btn" id="closeInfoBtn">&times;</button>
+      </div>
+
+      <!-- 基本信息 -->
+      <div class="info-section">
+        <h4>基本信息</h4>
+        <div class="info-item">
+          <span class="info-label">文件名</span>
+          <span class="info-value" id="infoName">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">格式</span>
+          <span class="info-value" id="infoFormat">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">尺寸</span>
+          <span class="info-value" id="infoDimensions">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">文件大小</span>
+          <span class="info-value" id="infoFileSize">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">创建时间</span>
+          <span class="info-value" id="infoCreated">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">修改时间</span>
+          <span class="info-value" id="infoModified">-</span>
+        </div>
+      </div>
+
+      <!-- EXIF 信息 -->
+      <div class="info-section" id="exifSection" style="display: none;">
+        <h4>EXIF 信息</h4>
+        <div class="info-item">
+          <span class="info-label">相机型号</span>
+          <span class="info-value" id="infoCamera">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">镜头</span>
+          <span class="info-value" id="infoLens">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">光圈</span>
+          <span class="info-value" id="infoAperture">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">快门速度</span>
+          <span class="info-value" id="infoShutter">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">ISO</span>
+          <span class="info-value" id="infoISO">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">焦距</span>
+          <span class="info-value" id="infoFocal">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">拍摄日期</span>
+          <span class="info-value" id="infoDate">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">GPS 位置</span>
+          <span class="info-value" id="infoGPS">-</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- 滤镜选择面板（浮层）-->
+  <div class="filter-panel" id="filterPanel" style="display: none;">
+    <div class="filter-header">
+      <h3>🎨 滤镜效果</h3>
+      <button class="close-panel-btn" id="closeFilterBtn">&times;</button>
+    </div>
+    <div class="filter-grid">
+      <button class="filter-option" data-filter="none">
+        <span class="filter-name">无</span>
+        <span class="filter-preview">原图</span>
+      </button>
+      <button class="filter-option" data-filter="grayscale(100%)">
+        <span class="filter-name">灰度</span>
+        <span class="filter-preview grayscale">灰度</span>
+      </button>
+      <button class="filter-option" data-filter="sepia(100%)">
+        <span class="filter-name">老照片</span>
+        <span class="filter-preview sepia">老照片</span>
+      </button>
+      <button class="filter-option" data-filter="blur(2px)">
+        <span class="filter-name">模糊</span>
+        <span class="filter-preview blur">模糊</span>
+      </button>
+      <button class="filter-option" data-filter="brightness(120%)">
+        <span class="filter-name">增亮</span>
+        <span class="filter-preview brightness">+亮</span>
+      </button>
+      <button class="filter-option" data-filter="contrast(150%)">
+        <span class="filter-name">高对比</span>
+        <span class="filter-preview contrast">高对比</span>
+      </button>
+      <button class="filter-option" data-filter="saturate(150%)">
+        <span class="filter-name">高饱和</span>
+        <span class="filter-preview saturate">鲜艳</span>
+      </button>
+      <button class="filter-option" data-filter="hue-rotate(90deg)">
+        <span class="filter-name">色相偏移</span>
+        <span class="filter-preview hue-rotate">偏移</span>
+      </button>
+      <button class="filter-option" data-filter="invert(100%)">
+        <span class="filter-name">反色</span>
+        <span class="filter-preview invert">反色</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- 裁剪控制栏（裁剪模式时显示）-->
+  <div class="crop-controls" id="cropControls" style="display: none;">
+    <span class="crop-label">裁剪模式：拖拽选择区域</span>
+    <div class="crop-buttons">
+      <button class="toolbar-btn" id="confirmCropBtn">
+        <span class="icon">✓</span>
+        确认
+      </button>
+      <button class="toolbar-btn" id="cancelCropBtn">
+        <span class="icon">✕</span>
+        取消
+      </button>
+    </div>
+  </div>
+
+  <!--
+    ==================== 状态栏 ====================
+    显示当前图片的基本信息
+  -->
+  <footer class="status-bar">
+    <span id="imageName">-</span>
+    <span id="imageSize">-</span>
+    <span id="imageDimensions">-</span>
+    <span id="imageZoom">100%</span>
+  </footer>
+
+  <!-- 快捷键提示 -->
+  <div class="shortcuts-hint">
+    快捷键：Ctrl+O 打开 | ←→ 切换 | Ctrl++/- 缩放 | Space 播放幻灯片
+  </div>
+
+  <!-- 引入 JavaScript 文件 -->
+  <script src="renderer.js"></script>
+</body>
+</html>
