@@ -306,18 +306,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // 运行单个 GPU 测试
   async function runSingleGPUTest(type) {
     switch (type) {
-      case '2d':
-        return await benchmark.run2DRenderTest();
-      case 'particles':
-        return await benchmark.runParticleTest();
-      case '3d':
-        return await benchmark.run3DRenderTest();
-      case 'shader':
-        return await benchmark.runShaderComputeTest();
-      case 'blend':
-        return await benchmark.runBlendModeTest();
+      case 'volume-low':
+        return await benchmark.runVolumeShaderTest(5000, 8, 1000, 8.0, 1.0);
+      case 'volume-med':
+        return await benchmark.runVolumeShaderTest(5000, 10, 1500, 10.0, 1.2);
+      case 'volume-high':
+        return await benchmark.runVolumeShaderTest(5000, 12, 2000, 12.0, 1.5);
       default:
-        throw new Error('未知的测试类型');
+        throw new Error('未知的测试类型: ' + type);
     }
   }
 

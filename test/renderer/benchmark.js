@@ -93,8 +93,8 @@ class GPUBenchmark {
     return estimatedMB;
   }
 
-  // 计算跑分
-  static calculateScore(fps, maxFPS = 60, weight = 1) {
+  // 计算跑分 - 满分对应240 FPS
+  static calculateScore(fps, maxFPS = 240, weight = 1) {
     const normalizedFPS = Math.min(fps / maxFPS, 1);
     const score = Math.round(normalizedFPS * 10000 * weight);
     return score;
@@ -512,7 +512,7 @@ class GPUBenchmark {
         vec2 uv0 = uv;
         vec3 finalColor = vec3(0.0);
 
-        for (float i = 0.0; i < 4.0; i++) {
+        for (float i = 0.0; i < 10.0; i++) {
           uv = fract(uv * 1.5) - 0.5;
           float d = length(uv) * exp(-length(uv0));
           vec3 col = palette(length(uv0) + i * 0.4 + time * 0.4);
@@ -675,17 +675,15 @@ class GPUBenchmark {
     });
   }
 
-  // 运行所有测试
+  // 运行所有测试 - 只保留体积渲染压力测试
   async runAllTests(onProgress) {
     this.isRunning = true;
     this.results = [];
 
     const tests = [
-      { name: '2D 图形渲染', fn: () => this.run2DRenderTest() },
-      { name: '粒子系统', fn: () => this.runParticleTest() },
-      { name: '3D 渲染', fn: () => this.run3DRenderTest() },
-      { name: '着色器计算', fn: () => this.runShaderComputeTest() },
-      { name: '混合模式', fn: () => this.runBlendModeTest() }
+      { name: '体积渲染 - 标准压力', fn: () => this.runVolumeShaderTest(5000, 8, 1000, 8.0, 1.0) },
+      { name: '体积渲染 - 高压力', fn: () => this.runVolumeShaderTest(5000, 10, 1500, 10.0, 1.2) },
+      { name: '体积渲染 - 极限压力', fn: () => this.runVolumeShaderTest(5000, 12, 2000, 12.0, 1.5) }
     ];
 
     for (let i = 0; i < tests.length; i++) {
@@ -728,6 +726,241 @@ class GPUBenchmark {
       results: this.results,
       totalScore: this.results.reduce((sum, r) => sum + (r.score || 0), 0)
     };
+  }
+
+  // 体积渲染着色器测试 - 可调压力级别
+  async runVolumeShaderTest(duration = 5000, iterations = 8, raySteps = 2000, maxDist = 12.0, weight = 2.0) {
+    const gl = this.gl;
+    const results = {
+      name: `体积渲染 (迭代${iterations}次/步进${raySteps}步)`,
+      fps: [],
+      score: 0,
+      config: { iterations, raySteps, maxDist, weight }
+    };
+    let frameCount = 0;
+    let startTime = performance.now();
+    let testStartTime = startTime;
+
+    // 顶点着色器
+    const vertexSource = `
+      attribute vec4 position;
+      varying vec3 dir, localdir;
+      uniform vec3 right, forward, up, origin;
+      uniform float x, y;
+      void main() {
+        gl_Position = position;
+        dir = forward + right * position.x * x + up * position.y * y;
+        localdir.x = position.x * x;
+        localdir.y = position.y * y;
+        localdir.z = -1.0;
+      }
+    `;
+
+    // 3D 分形核函数 - 动态迭代次数
+    const kernelSource = `
+      float kernal(vec3 ver) {
+        vec3 a = ver;
+        for (int i = 0; i < ${iterations}; i++) {
+          float b = length(a);
+          float c = atan(a.y, a.x) * 8.0;
+          float e = 1.0 / b;
+          float d = acos(a.z / b) * 8.0;
+          b = pow(b, 8.0);
+          a = vec3(b * sin(d) * cos(c), b * sin(d) * sin(c), b * cos(d)) + ver;
+          if (b > 6.0) break;
+        }
+        return 4.0 - a.x * a.x - a.y * a.y - a.z * a.z;
+      }
+    `;
+
+    // 片段着色器 - 高压力光线步进
+    const fragmentSource = `
+      precision highp float;
+      #define PI 3.14159265358979324
+      #define M_L 0.3819660113
+      #define M_R 0.6180339887
+      #define MAXR 12
+      #define SOLVER 12
+
+      varying vec3 dir, localdir;
+      uniform vec3 right, forward, up, origin;
+      uniform float len;
+      const float step = ${(1.0 / raySteps).toFixed(6)};
+
+      ${kernelSource}
+
+      void main() {
+        vec3 color = vec3(0.0);
+        int sign = 0;
+
+        float v1 = kernal(origin + dir * (step * len));
+        float v2 = kernal(origin);
+        float r3_val = 0.0;
+
+        for (int k = 2; k < ${raySteps + 2}; k++) {
+          vec3 ver = origin + dir * (step * len * float(k));
+          float v = kernal(ver);
+
+          if (v > 0.0 && v1 < 0.0) {
+            float r1 = step * len * float(k - 1);
+            float r2 = step * len * float(k);
+            float m1 = kernal(origin + dir * r1);
+            float m2 = kernal(origin + dir * r2);
+            for (int l = 0; l < SOLVER; l++) {
+              float r3 = r1 * 0.5 + r2 * 0.5;
+              float m3 = kernal(origin + dir * r3);
+              if (m3 > 0.0) { r2 = r3; m2 = m3; }
+              else { r1 = r3; m1 = m3; }
+            }
+            r3_val = r1 * 0.5 + r2 * 0.5;
+            if (r3_val < ${maxDist.toFixed(1)} * len) { sign = 1; break; }
+          }
+
+          if (v < v1 && v1 > v2 && v1 < 0.0 && (v1 * 2.0 > v || v1 * 2.0 > v2)) {
+            float r1 = step * len * float(k - 2);
+            float r2 = step * len * (float(k) - 2.0 + 2.0 * M_L);
+            float r3 = step * len * (float(k) - 2.0 + 2.0 * M_R);
+            float r4 = step * len * float(k);
+            float m2 = kernal(origin + dir * r2);
+            float m3 = kernal(origin + dir * r3);
+            for (int l = 0; l < MAXR; l++) {
+              if (m2 > m3) {
+                r4 = r3; r3 = r2; r2 = r4 * M_L + r1 * M_R;
+                m3 = m2; m2 = kernal(origin + dir * r2);
+              } else {
+                r1 = r2; r2 = r3; r3 = r4 * M_R + r1 * M_L;
+                m2 = m3; m3 = kernal(origin + dir * r3);
+              }
+            }
+            if (m2 > 0.0) {
+              float s1 = step * len * float(k - 2);
+              float s2 = r2;
+              float sm1 = kernal(origin + dir * s1);
+              float sm2 = kernal(origin + dir * s2);
+              for (int l = 0; l < SOLVER; l++) {
+                float s3 = s1 * 0.5 + s2 * 0.5;
+                float sm3 = kernal(origin + dir * s3);
+                if (sm3 > 0.0) { s2 = s3; sm2 = sm3; }
+                else { s1 = s3; sm1 = sm3; }
+              }
+              r3_val = s1 * 0.5 + s2 * 0.5;
+              if (r3_val < ${maxDist.toFixed(1)} * len && r3_val > step * len) { sign = 1; break; }
+            }
+          }
+          v2 = v1;
+          v1 = v;
+        }
+
+        if (sign == 1) {
+          vec3 ver = origin + dir * r3_val;
+          float r1 = ver.x * ver.x + ver.y * ver.y + ver.z * ver.z;
+          vec3 n;
+          n.x = kernal(ver - right * (r3_val * 0.00025)) - kernal(ver + right * (r3_val * 0.00025));
+          n.y = kernal(ver - up * (r3_val * 0.00025)) - kernal(ver + up * (r3_val * 0.00025));
+          n.z = kernal(ver + forward * (r3_val * 0.00025)) - kernal(ver - forward * (r3_val * 0.00025));
+          float r3n = n.x * n.x + n.y * n.y + n.z * n.z;
+          n = n * (1.0 / sqrt(r3n));
+          vec3 lv = normalize(localdir);
+          vec3 reflectv = n * (-2.0 * dot(lv, n)) + lv;
+          float lum = reflectv.x * 0.276 + reflectv.y * 0.920 + reflectv.z * 0.276;
+          float amb = n.x * 0.276 + n.y * 0.920 + n.z * 0.276;
+          lum = max(0.0, lum);
+          lum = lum * lum * lum * lum;
+          float shade = lum * 0.45 + amb * 0.25 + 0.3;
+          n.x = sin(r1 * 10.0) * 0.5 + 0.5;
+          n.y = sin(r1 * 10.0 + 2.05) * 0.5 + 0.5;
+          n.z = sin(r1 * 10.0 - 2.05) * 0.5 + 0.5;
+          color = n * shade;
+        }
+        gl_FragColor = vec4(color, 1.0);
+      }
+    `;
+
+    const vertexShader = this.createShader(gl.VERTEX_SHADER, vertexSource);
+    if (!vertexShader) throw new Error('体积渲染顶点着色器编译失败');
+
+    const fragmentShader = this.createShader(gl.FRAGMENT_SHADER, fragmentSource);
+    if (!fragmentShader) throw new Error('体积渲染片段着色器编译失败');
+
+    const program = this.createProgram(vertexShader, fragmentShader);
+
+    const positions = new Float32Array([
+      -1.0, -1.0, 0.0, 1.0, -1.0, 0.0, 1.0, 1.0, 0.0,
+      -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, 1.0, 0.0
+    ]);
+
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
+
+    const positionLocation = gl.getAttribLocation(program, 'position');
+    const glRight = gl.getUniformLocation(program, 'right');
+    const glForward = gl.getUniformLocation(program, 'forward');
+    const glUp = gl.getUniformLocation(program, 'up');
+    const glOrigin = gl.getUniformLocation(program, 'origin');
+    const glX = gl.getUniformLocation(program, 'x');
+    const glY = gl.getUniformLocation(program, 'y');
+    const glLen = gl.getUniformLocation(program, 'len');
+
+    const len = 1.6;
+    let ang1 = 2.8;
+    const ang2 = 0.4;
+
+    return new Promise((resolve) => {
+      const render = () => {
+        const currentTime = performance.now();
+        const elapsed = currentTime - testStartTime;
+
+        if (elapsed >= duration || !this.isRunning) {
+          const avgFPS = frameCount / (elapsed / 1000);
+          results.fps = avgFPS;
+          // 满分对应240 FPS，根据压力级别调整权重
+          const levelWeight = iterations >= 12 ? 3.0 : iterations >= 10 ? 2.0 : 1.0;
+          results.score = GPUBenchmark.calculateScore(avgFPS, 240, weight * levelWeight);
+          resolve(results);
+          return;
+        }
+
+        frameCount++;
+        if (this.onFPSUpdate) {
+          this.onFPSUpdate(Math.round(1000 / (currentTime - startTime)));
+        }
+        startTime = currentTime;
+
+        ang1 += 0.01;
+
+        gl.useProgram(program);
+
+        gl.uniform1f(glX, 1.0);
+        gl.uniform1f(glY, 1.0);
+        gl.uniform1f(glLen, len);
+        gl.uniform3f(glOrigin,
+          len * Math.cos(ang1) * Math.cos(ang2),
+          len * Math.sin(ang2),
+          len * Math.sin(ang1) * Math.cos(ang2)
+        );
+        gl.uniform3f(glRight, Math.sin(ang1), 0, -Math.cos(ang1));
+        gl.uniform3f(glUp,
+          -Math.sin(ang2) * Math.cos(ang1),
+          Math.cos(ang2),
+          -Math.sin(ang2) * Math.sin(ang1)
+        );
+        gl.uniform3f(glForward,
+          -Math.cos(ang1) * Math.cos(ang2),
+          -Math.sin(ang2),
+          -Math.sin(ang1) * Math.cos(ang2)
+        );
+
+        gl.enableVertexAttribArray(positionLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+        gl.vertexAttribPointer(positionLocation, 3, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+        requestAnimationFrame(render);
+      };
+
+      render();
+    });
   }
 
   // 停止测试

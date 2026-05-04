@@ -77,14 +77,9 @@
           <div class="test-selection">
             <label for="test-type">选择测试项目:</label>
             <select id="test-type">
-              <!-- GPU 测试选项 -->
-              <optgroup id="gpu-options" label="GPU 测试">
-                <option value="all">全部测试 (推荐)</option>
-                <option value="2d">二维图形渲染</option>
-                <option value="particles">粒子系统 (5000+ 粒子)</option>
-                <option value="3d">3D 渲染</option>
-                <option value="shader">着色器计算</option>
-                <option value="blend">混合模式</option>
+              <!-- GPU 测试选项 - 只保留体积渲染压力测试 -->
+              <optgroup id="gpu-options" label="GPU 压力测试">
+                <option value="all" selected>全部压力测试 (推荐)</option>
               </optgroup>
               <!-- CPU 测试选项 -->
               <optgroup id="cpu-options" label="CPU 测试" hidden>
