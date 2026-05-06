@@ -17,7 +17,8 @@
     },
     "files": [
       "**/*",
-      "!dist/**"
+      "!dist/**",
+      "!node_modules/.cache/**"
     ],
     "win": {
       "forceCodeSigning": false,

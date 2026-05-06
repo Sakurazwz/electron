@@ -12,3 +12,4 @@
 /image-viewre/node_modules/electron/dist/
 /notes-app/node_modules/electron/dist/
 *.exe
+/image-viewer/dist
